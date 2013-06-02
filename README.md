@@ -3,9 +3,6 @@
 **Install**  
 http://laucheukhim.github.io/stackactivity/stackactivity.user.js
 
-**View source**  
-https://github.com/laucheukhim/stackactivity/blob/master/stackactivity.user.js
-
 **License**  
 [MIT License][2]
 
