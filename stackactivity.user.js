@@ -185,7 +185,7 @@ with_jquery(function ($) {
                                     }
                                 } else {
                                     if ($(this).find('span.relativetime') && $(this).find('span.relativetime').attr('title')) {
-                                        if (results[question_id].last_activity_date >= timestampFromISO($(this).find('span.relativetime').attr('title'))) {
+                                        if (Math.abs(results[question_id].last_activity_date - timestampFromISO($(this).find('span.relativetime').attr('title'))) <= 1) {
                                             $(this).find('span.last-activity').text(results[question_id].last_activity);
                                         }
                                     }
