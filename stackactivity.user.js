@@ -38,7 +38,7 @@ with_jquery(function ($) {
         function getLastActivity(question_ids) {
             var api_url = 'http://api.stackexchange.com/2.1/questions/';
             var api_param = '?pagesize=100&order=desc&sort=activity&site=' + location.host;
-            var api_filter = '!OduD9Ow1h(GaqEDP2wQAvhTIQutewwXowavvMK-rN8Y'; // !17Z3ZCpevWZ9v0vVAlbFTkU6gZmBtW)k(c68X_6F7l*4LU
+            var api_filter = '!*1KcrsL3BXwn6U3cZB9sIDUW7iYlpxNFJBuEgMsCI';
             var api_key = 'JcFmrH*OeA0JAQKlVkwNcQ((';
             return $.ajax({
                 type: 'GET',
@@ -77,124 +77,130 @@ with_jquery(function ($) {
             var question_ids = [],
                 question_prefix = '';
             $('div.question-summary').each(function () {
-                question_ids.push($(this).attr('id').match(/\d+/)[0]);
-                question_prefix = question_prefix.length ? question_prefix : $(this).attr('id').replace(/\d/g, '');
-            })
+                    question_ids.push($(this).attr('id').match(/\d+/)[0]);
+                    question_prefix = question_prefix.length ? question_prefix : $(this).attr('id').replace(/\d/g, '');
+                })
 
             getLastActivity(question_ids).done(function (data) {
-                if (data.items && data.items.length) {
-                    var questions = data.items;
-                    var results = {};
-                    for (var i in questions) {
-                        results[questions[i].question_id] = false;
-                        var last_activity_date = questions[i].last_activity_date;
-                        if (questions[i].creation_date >= last_activity_date) {
-                            last_activity_date = questions[i].creation_date;
-                            results[questions[i].question_id] = {
-                                last_activity: "asked",
-                                last_activity_date: last_activity_date,
-                                user_id: questions[i].owner.user_id
-                            };
-                        }
-                        if (questions[i].last_edit_date >= last_activity_date) {
-                            last_activity_date = questions[i].last_edit_date;
-                            results[questions[i].question_id] = {
-                                last_activity: "edited question",
-                                last_activity_date: last_activity_date
-                            };
-                        }
-                        if (questions[i].migrated_from && questions[i].migrated_from.on_date >= last_activity_date) {
-                            last_activity_date = questions[i].migrated_from.on_date;
-                            results[questions[i].question_id] = {
-                                last_activity: "migrated here",
-                                last_activity_date: last_activity_date
-                            };
-                        }
-                        if (typeof questions[i].answers !== 'undefined') {
-                            var answers = questions[i].answers;
-                            for (var j in answers) {
-                                last_activity_date = answers[j].last_activity_date > last_activity_date ? answers[j].last_activity_date : last_activity_date;
-                                if (answers[j].creation_date >= last_activity_date) {
-                                    last_activity_date = answers[j].creation_date;
-                                    results[questions[i].question_id] = {
-                                        last_activity: "answered",
-                                        last_activity_date: last_activity_date,
-                                        user_id: answers[j].owner.user_id
-                                    };
+                    if (data.items && data.items.length) {
+                        var questions = data.items;
+                        var results = {};
+                        for (var i in questions) {
+                            results[questions[i].question_id] = false;
+                            var last_activity_date = questions[i].last_activity_date;
+                            if (questions[i].migrated_to) {
+                                results[questions[i].question_id] = {
+                                    last_activity: "migrated away",
+                                    last_activity_date: last_activity_date
+                                };
+                            }
+                            if (questions[i].creation_date >= last_activity_date) {
+                                last_activity_date = questions[i].creation_date;
+                                results[questions[i].question_id] = {
+                                    last_activity: "asked",
+                                    last_activity_date: last_activity_date,
+                                    user_id: questions[i].owner.user_id
+                                };
+                            }
+                            if (questions[i].last_edit_date >= last_activity_date) {
+                                last_activity_date = questions[i].last_edit_date;
+                                results[questions[i].question_id] = {
+                                    last_activity: "edited question",
+                                    last_activity_date: last_activity_date
+                                };
+                            }
+                            if (questions[i].migrated_from && questions[i].migrated_from.on_date >= last_activity_date) {
+                                last_activity_date = questions[i].migrated_from.on_date;
+                                results[questions[i].question_id] = {
+                                    last_activity: "migrated here",
+                                    last_activity_date: last_activity_date
+                                };
+                            }
+                            if (typeof questions[i].answers !== 'undefined') {
+                                var answers = questions[i].answers;
+                                for (var j in answers) {
+                                    last_activity_date = answers[j].last_activity_date > last_activity_date ? answers[j].last_activity_date : last_activity_date;
+                                    if (answers[j].creation_date >= last_activity_date) {
+                                        last_activity_date = answers[j].creation_date;
+                                        results[questions[i].question_id] = {
+                                            last_activity: "answered",
+                                            last_activity_date: last_activity_date,
+                                            user_id: answers[j].owner.user_id
+                                        };
+                                    }
+                                    if (answers[j].last_edit_date >= last_activity_date) {
+                                        last_activity_date = answers[j].last_edit_date;
+                                        results[questions[i].question_id] = {
+                                            last_activity: "edited answer",
+                                            last_activity_date: last_activity_date
+                                        };
+                                    }
                                 }
-                                if (answers[j].last_edit_date >= last_activity_date) {
-                                    last_activity_date = answers[j].last_edit_date;
+                            }
+                            if (!results[questions[i].question_id]) {
+                                if (questions[i].bounty_closes_date) {
                                     results[questions[i].question_id] = {
-                                        last_activity: "edited answer",
+                                        last_activity: "placed bounty",
+                                        last_activity_date: questions[i].bounty_closes_date - 7 * 24 * 3600
+                                    };
+                                } else if (questions[i].notice && questions[i].notice.creation_date >= last_activity_date) {
+                                    last_activity_date = questions[i].notice.creation_date;
+                                    results[questions[i].question_id] = {
+                                        last_activity: "placed bounty",
                                         last_activity_date: last_activity_date
                                     };
-                                }
-                            }
-                        }
-                        if (!results[questions[i].question_id]) {
-                            if (questions[i].bounty_closes_date) {
-                                results[questions[i].question_id] = {
-                                    last_activity: "placed bounty",
-                                    last_activity_date: questions[i].bounty_closes_date - 7 * 24 * 3600
-                                };
-                            } else if (questions[i].notice && questions[i].notice.creation_date >= last_activity_date) {
-                                last_activity_date = questions[i].notice.creation_date;
-                                results[questions[i].question_id] = {
-                                    last_activity: "placed bounty",
-                                    last_activity_date: last_activity_date
-                                };
-                            } else {
-                                // Fallback
-                                results[questions[i].question_id] = {
-                                    last_activity_date: last_activity_date
-                                }
-                                $('div#' + question_prefix + questions[i].question_id).find('div.summary div.started a.started-link').filter(function () {
-                                    if (!$(this).find('span.last-activity').length) {
-                                        $(this).prepend('<span class="last-activity"></span> ');
-                                    }
-                                    if ($(this).siblings('a:contains("Community")').length) {
-                                        $(this).find('span.last-activity').text('poked');
-                                    } else {
-                                        getRevisions(questions[i].question_id).done(function (data) {
-                                            if (data.items && data.items.length) {
-                                                var revisions = data.items;
-                                                if (revisions[0].creation_date >= results[data.items[0].post_id].last_activity_date && revisions[0].comment && revisions[0].comment.toLowerCase().indexOf('reopen') !== -1) {
-                                                    $('div#' + question_prefix + data.items[0].post_id + ' div.summary div.started a.started-link span.last-activity').text('reopened');
-                                                } else {
-                                                    $('div#' + question_prefix + data.items[0].post_id + ' div.summary div.started a.started-link span.last-activity').text('deleted answer');
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        }
-                    }
-                    for (var question_id in results) {
-                        $('div#' + question_prefix + question_id).find('div.summary div.started a.started-link').filter(function () {
-                            if (!$(this).find('span.last-activity').length) {
-                                $(this).prepend('<span class="last-activity"></span> ');
-                            }
-                            if (results[question_id] && results[question_id].last_activity) {
-                                if (results[question_id].user_id) {
-                                    if ($(this).siblings('a[href*="users"]').length) {
-                                        var user_id = $(this).siblings('a[href*="users"]').attr('href').match(/\/([-\d]+)\//)[1];
-                                        if (user_id == results[question_id].user_id) {
-                                            $(this).find('span.last-activity').text(results[question_id].last_activity);
-                                        }
-                                    }
                                 } else {
-                                    if ($(this).find('span.relativetime') && $(this).find('span.relativetime').attr('title')) {
-                                        if (Math.abs(results[question_id].last_activity_date - timestampFromISO($(this).find('span.relativetime').attr('title'))) <= 1) {
-                                            $(this).find('span.last-activity').text(results[question_id].last_activity);
+                                    // Fallback
+                                    results[questions[i].question_id] = {
+                                        last_activity_date: last_activity_date
+                                    }
+                                    $('div#' + question_prefix + questions[i].question_id).find('div.summary div.started a.started-link').filter(function () {
+                                        if (!$(this).find('span.last-activity').length) {
+                                            $(this).prepend('<span class="last-activity"></span> ');
+                                        }
+                                        if ($(this).siblings('a:contains("Community")').length) {
+                                            $(this).find('span.last-activity').text('poked');
+                                        } else {
+                                            getRevisions(questions[i].question_id).done(function (data) {
+                                                if (data.items && data.items.length) {
+                                                    var revisions = data.items;
+                                                    if (revisions[0].creation_date >= results[data.items[0].post_id].last_activity_date && revisions[0].comment && revisions[0].comment.toLowerCase().indexOf('reopen') !== -1) {
+                                                        $('div#' + question_prefix + data.items[0].post_id + ' div.summary div.started a.started-link span.last-activity').text('reopened');
+                                                    } else {
+                                                        $('div#' + question_prefix + data.items[0].post_id + ' div.summary div.started a.started-link span.last-activity').text('deleted answer');
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                        for (var question_id in results) {
+                            $('div#' + question_prefix + question_id).find('div.summary div.started a.started-link').filter(function () {
+                                if (!$(this).find('span.last-activity').length) {
+                                    $(this).prepend('<span class="last-activity"></span> ');
+                                }
+                                if (results[question_id] && results[question_id].last_activity) {
+                                    if (results[question_id].user_id) {
+                                        if ($(this).siblings('a[href*="users"]').length) {
+                                            var user_id = $(this).siblings('a[href*="users"]').attr('href').match(/\/([-\d]+)\//)[1];
+                                            if (user_id == results[question_id].user_id) {
+                                                $(this).find('span.last-activity').text(results[question_id].last_activity);
+                                            }
+                                        }
+                                    } else {
+                                        if ($(this).find('span.relativetime') && $(this).find('span.relativetime').attr('title')) {
+                                            if (Math.abs(results[question_id].last_activity_date - timestampFromISO($(this).find('span.relativetime').attr('title'))) <= 1) {
+                                                $(this).find('span.last-activity').text(results[question_id].last_activity);
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
-                }
-            });
+                });
         }
         init();
 
