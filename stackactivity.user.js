@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name             Stack Activity
 // @namespace        Stack Activity
-// @version          1.0
-// @description      Stack Activity is a simple userscript that shows you the last activity of every question on the homepage of any Stack Exchange sites.
+// @version          1.1
+// @description      Stack Activity is a simple userscript that shows you the last activity of every question on the homepage and active list of any Stack Exchange sites.
 // @include          http://stackoverflow.com/*
 // @include          http://meta.stackoverflow.com/*
 // @include          http://superuser.com/*
@@ -33,7 +33,7 @@ with_jquery(function ($) {
 
     if (!(window.StackExchange && StackExchange.ready)) return;
 
-    if ($('body').hasClass('home-page')) {
+    if (($('body').hasClass('home-page') || $('body').hasClass('questions-page')) && $('div.summary div.started a.started-link').length) {
 
         function getLastActivity(question_ids) {
             var api_url = 'http://api.stackexchange.com/2.1/questions/';
@@ -156,9 +156,18 @@ with_jquery(function ($) {
                                     }
                                     $('div#' + question_prefix + questions[i].question_id).find('div.summary div.started a.started-link').filter(function () {
                                         if (!$(this).find('span.last-activity').length) {
-                                            $(this).prepend('<span class="last-activity"></span> ');
+                                            // Create element for holding last activity value
+                                            $(this).prepend('<span class="last-activity">modified</span> ');
+                                            // Remove 'modified' from question lists
+                                            $(this).parent().contents().filter(function () {
+                                                if (this.nodeType === 3 && this.nodeValue.trim().length) {
+                                                    if (this.nodeValue.trim() === 'modified') {
+                                                        this.nodeValue = '';
+                                                    }
+                                                }
+                                            });
                                         }
-                                        if ($(this).siblings('a:contains("Community")').length) {
+                                        if ($(this).siblings('a:contains("Community")').length || $(this).parent().siblings('div.user-details').find('a:contains("Community")').length) {
                                             $(this).find('span.last-activity').text('poked');
                                         } else {
                                             getRevisions(questions[i].question_id).done(function (data) {
@@ -179,12 +188,26 @@ with_jquery(function ($) {
                         for (var question_id in results) {
                             $('div#' + question_prefix + question_id).find('div.summary div.started a.started-link').filter(function () {
                                 if (!$(this).find('span.last-activity').length) {
-                                    $(this).prepend('<span class="last-activity"></span> ');
+                                    // Create element for holding last activity value
+                                    $(this).prepend('<span class="last-activity">modified</span> ');
+                                    // Remove 'modified' from question lists
+                                    $(this).parent().contents().filter(function () {
+                                        if (this.nodeType === 3 && this.nodeValue.trim().length) {
+                                            if (this.nodeValue.trim() === 'modified') {
+                                                this.nodeValue = '';
+                                            }
+                                        }
+                                    });
                                 }
                                 if (results[question_id] && results[question_id].last_activity) {
                                     if (results[question_id].user_id) {
                                         if ($(this).siblings('a[href*="users"]').length) {
                                             var user_id = $(this).siblings('a[href*="users"]').attr('href').match(/\/([-\d]+)\//)[1];
+                                            if (user_id == results[question_id].user_id) {
+                                                $(this).find('span.last-activity').text(results[question_id].last_activity);
+                                            }
+                                        } else if ($(this).parent().siblings('div.user-details').length) {
+                                            var user_id = $(this).parent().siblings('div.user-details').find('a[href*="users"]').attr('href').match(/\/([-\d]+)\//)[1];
                                             if (user_id == results[question_id].user_id) {
                                                 $(this).find('span.last-activity').text(results[question_id].last_activity);
                                             }
