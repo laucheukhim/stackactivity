@@ -1,10 +1,3 @@
 ![Stack Activity][1]
 
-**Install**  
-http://laucheukhim.github.io/stackactivity/stackactivity.user.js
-
-**License**  
-[MIT License][2]
-
-[1]: http://i.stack.imgur.com/0FOBd.gif
-[2]: http://opensource.org/licenses/MIT
+[1]: http://i.stack.imgur.com/YwdSf.gif
