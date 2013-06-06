@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             Stack Activity
 // @namespace        Stack Activity
-// @version          1.1
+// @version          1.2
 // @description      Stack Activity is a simple userscript that shows you the last activity of every question on the homepage and active tab of any Stack Exchange sites.
 // @include          http://stackoverflow.com/*
 // @include          http://meta.stackoverflow.com/*
@@ -33,7 +33,7 @@ with_jquery(function ($) {
 
     if (!(window.StackExchange && StackExchange.ready)) return;
 
-    if (($('body').hasClass('home-page') || $('body').hasClass('questions-page')) && $('div.summary div.started a.started-link').length) {
+    if ((($('body').hasClass('home-page') || $('body').hasClass('questions-page')) && $('div.summary div.started a.started-link').length) || ($('body').hasClass('user-page') && $('div.summary div.started span.relativetime').length)) {
 
         function getLastActivity(question_ids) {
             var api_url = 'http://api.stackexchange.com/2.1/questions/';
@@ -138,12 +138,12 @@ with_jquery(function ($) {
                                 }
                             }
                             if (!results[questions[i].question_id]) {
-                                if (questions[i].bounty_closes_date) {
+                                if (questions[i].bounty_closes_date && questions[i].bounty_closes_date - 7 * 24 * 3600 >= last_activity_date) {
                                     results[questions[i].question_id] = {
                                         last_activity: "placed bounty",
                                         last_activity_date: questions[i].bounty_closes_date - 7 * 24 * 3600
                                     };
-                                } else if (questions[i].notice && questions[i].notice.creation_date >= last_activity_date) {
+                                } else if (questions[i].notice && questions[i].notice.creation_date >= last_activity_date && (!questions[i].locked_date || questions[i].locked_date !== questions[i].notice.creation_date)) {
                                     last_activity_date = questions[i].notice.creation_date;
                                     results[questions[i].question_id] = {
                                         last_activity: "placed bounty",
@@ -154,7 +154,7 @@ with_jquery(function ($) {
                                     results[questions[i].question_id] = {
                                         last_activity_date: last_activity_date
                                     }
-                                    $('div#' + question_prefix + questions[i].question_id).find('div.summary div.started a.started-link').filter(function () {
+                                    $('div#' + question_prefix + questions[i].question_id).find('div.summary div.started span.relativetime').parent().filter(function () {
                                         if (!$(this).find('span.last-activity').length) {
                                             // Create element for holding last activity value
                                             $(this).prepend('<span class="last-activity">modified</span> ');
@@ -174,9 +174,9 @@ with_jquery(function ($) {
                                                 if (data.items && data.items.length) {
                                                     var revisions = data.items;
                                                     if (revisions[0].creation_date >= results[data.items[0].post_id].last_activity_date && revisions[0].comment && revisions[0].comment.toLowerCase().indexOf('reopen') !== -1) {
-                                                        $('div#' + question_prefix + data.items[0].post_id + ' div.summary div.started a.started-link span.last-activity').text('reopened');
+                                                        $('div#' + question_prefix + data.items[0].post_id + ' div.summary div.started span.last-activity').text('reopened');
                                                     } else {
-                                                        $('div#' + question_prefix + data.items[0].post_id + ' div.summary div.started a.started-link span.last-activity').text('deleted answer');
+                                                        $('div#' + question_prefix + data.items[0].post_id + ' div.summary div.started span.last-activity').text('deleted answer');
                                                     }
                                                 }
                                             });
@@ -186,7 +186,7 @@ with_jquery(function ($) {
                             }
                         }
                         for (var question_id in results) {
-                            $('div#' + question_prefix + question_id).find('div.summary div.started a.started-link').filter(function () {
+                            $('div#' + question_prefix + question_id).find('div.summary div.started span.relativetime').parent().filter(function () {
                                 if (!$(this).find('span.last-activity').length) {
                                     // Create element for holding last activity value
                                     $(this).prepend('<span class="last-activity">modified</span> ');
