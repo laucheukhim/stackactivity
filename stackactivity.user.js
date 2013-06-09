@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             Stack Activity
-// @namespace        Stack Activity
-// @version          1.2
+// @namespace        StackActivity
+// @version          1.2.1
 // @description      Stack Activity is a simple userscript that shows you the last activity of every question on the homepage and active tab of any Stack Exchange sites.
 // @include          http://stackoverflow.com/*
 // @include          http://meta.stackoverflow.com/*
@@ -33,7 +33,7 @@ with_jquery(function ($) {
 
     if (!(window.StackExchange && StackExchange.ready)) return;
 
-    if ((($('body').hasClass('home-page') || $('body').hasClass('questions-page')) && $('div.summary div.started a.started-link').length) || ($('body').hasClass('user-page') && $('div.summary div.started span.relativetime').length)) {
+    if ((($('body').hasClass('home-page') || $('body').hasClass('questions-page') || $('body').hasClass('tagged-questions-page')) && $('div.summary div.started a.started-link').length) || ($('body').hasClass('user-page') && $('div.summary div.started span.relativetime').length)) {
 
         function getLastActivity(question_ids) {
             var api_url = 'http://api.stackexchange.com/2.1/questions/';
@@ -174,7 +174,9 @@ with_jquery(function ($) {
                                                 if (data.items && data.items.length) {
                                                     var revisions = data.items;
                                                     if (revisions[0].creation_date >= results[data.items[0].post_id].last_activity_date && revisions[0].comment && revisions[0].comment.toLowerCase().indexOf('reopen') !== -1) {
-                                                        $('div#' + question_prefix + data.items[0].post_id + ' div.summary div.started span.last-activity').text('reopened');
+                                                        if (revisions[0].user.user_id == $('div#' + question_prefix + data.items[0].post_id + ' div.summary div.started a[href*="users"]').attr('href').match(/\/([-\d]+)\//)[1]) {
+                                                            $('div#' + question_prefix + data.items[0].post_id + ' div.summary div.started span.last-activity').text('reopened');
+                                                        }
                                                     } else {
                                                         $('div#' + question_prefix + data.items[0].post_id + ' div.summary div.started span.last-activity').text('deleted answer');
                                                     }
@@ -203,20 +205,19 @@ with_jquery(function ($) {
                                     if (results[question_id].user_id) {
                                         if ($(this).siblings('a[href*="users"]').length) {
                                             var user_id = $(this).siblings('a[href*="users"]').attr('href').match(/\/([-\d]+)\//)[1];
-                                            if (user_id == results[question_id].user_id) {
-                                                $(this).find('span.last-activity').text(results[question_id].last_activity);
+                                            if (user_id != results[question_id].user_id) {
+                                                return;
                                             }
                                         } else if ($(this).parent().siblings('div.user-details').length) {
                                             var user_id = $(this).parent().siblings('div.user-details').find('a[href*="users"]').attr('href').match(/\/([-\d]+)\//)[1];
-                                            if (user_id == results[question_id].user_id) {
-                                                $(this).find('span.last-activity').text(results[question_id].last_activity);
+                                            if (user_id != results[question_id].user_id) {
+                                                return;
                                             }
                                         }
-                                    } else {
-                                        if ($(this).find('span.relativetime') && $(this).find('span.relativetime').attr('title')) {
-                                            if (Math.abs(results[question_id].last_activity_date - timestampFromISO($(this).find('span.relativetime').attr('title'))) <= 1) {
-                                                $(this).find('span.last-activity').text(results[question_id].last_activity);
-                                            }
+                                    }
+                                    if ($(this).find('span.relativetime') && $(this).find('span.relativetime').attr('title')) {
+                                        if (Math.abs(results[question_id].last_activity_date - timestampFromISO($(this).find('span.relativetime').attr('title'))) <= 1) {
+                                            $(this).find('span.last-activity').text(results[question_id].last_activity);
                                         }
                                     }
                                 }
