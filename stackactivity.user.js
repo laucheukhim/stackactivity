@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             Stack Activity
 // @namespace        StackActivity
-// @version          1.2.2
+// @version          1.2.3
 // @description      Stack Activity is a simple userscript that shows you the last activity of every question on the homepage and active tab of any Stack Exchange sites.
 // @include          http://stackoverflow.com/*
 // @include          http://meta.stackoverflow.com/*
@@ -13,10 +13,10 @@
 // @include          http://meta.askubuntu.com/*
 // @include          http://answers.onstartups.com/*
 // @include          http://meta.answers.onstartups.com/*
-// @include          http://nothingtoinstall.com/*
-// @include          http://meta.nothingtoinstall.com/*
 // @include          http://seasonedadvice.com/*
 // @include          http://meta.seasonedadvice.com/*
+// @include          http://mathoverflow.net/*
+// @include          http://meta.mathoverflow.net/*
 // @include          http://stackapps.com/*
 // @include          http://*.stackexchange.com/*
 // @author           Antony Lau
@@ -78,7 +78,6 @@ with_jquery(function ($) {
                 question_ids.push($(this).attr('id').match(/\d+/)[0]);
                 question_prefix = question_prefix.length ? question_prefix : $(this).attr('id').replace(/\d/g, '');
             })
-        console.log(question_ids);
 
         getLastActivity(question_ids).done(function (data) {
                 if (data.items && data.items.length) {
