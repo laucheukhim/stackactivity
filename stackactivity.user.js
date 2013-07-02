@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             Stack Activity
 // @namespace        StackActivity
-// @version          1.2.3
+// @version          1.2.4
 // @description      Stack Activity is a simple userscript that shows you the last activity of every question on the homepage and active tab of any Stack Exchange sites.
 // @include          http://stackoverflow.com/*
 // @include          http://meta.stackoverflow.com/*
@@ -178,10 +178,8 @@ with_jquery(function ($) {
                                                     for (var i in revisions) {
                                                         if (Math.abs(revisions[i].creation_date - timestamp) <= 1 && revisions[i].comment && revisions[i].comment.toLowerCase().indexOf('reopen') !== -1) {
                                                             found = true;
-                                                            if (revisions[i].user.user_id == $('div#' + question_prefix + revisions[i].post_id + ' div.summary div.started a[href*="users"]').attr('href').match(/\/([-\d]+)\//)[1]) {
-                                                                // Question is reopened
-                                                                $('div#' + question_prefix + revisions[i].post_id + ' div.summary div.started span.last-activity').text('reopened');
-                                                            }
+                                                            // Question is reopened
+                                                            $('div#' + question_prefix + revisions[i].post_id + ' div.summary div.started span.last-activity').text('reopened');
                                                         }
                                                     }
                                                     if (!found) {
@@ -235,7 +233,7 @@ with_jquery(function ($) {
             });
     }
 
-    if ((($('body').hasClass('home-page') || $('body').hasClass('questions-page') || $('body').hasClass('tagged-questions-page')) && $('div.summary div.started a.started-link').length) || ($('body').hasClass('user-page') && $('div.summary div.started span.relativetime').length)) {
+    if ((($('body').hasClass('home-page') || $('body').hasClass('questions-page') || $('body').hasClass('unanswered-page') || $('body').hasClass('tagged-questions-page')) && $('div.summary div.started a.started-link').length) || ($('body').hasClass('user-page') && $('div.summary div.started span.relativetime').length)) {
         init();
     }
 
