@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             Stack Activity
 // @namespace        StackActivity
-// @version          1.2.4
+// @version          1.2.5
 // @description      Stack Activity is a simple userscript that shows you the last activity of every question on the homepage and active tab of any Stack Exchange sites.
 // @include          http://stackoverflow.com/*
 // @include          http://meta.stackoverflow.com/*
@@ -166,8 +166,23 @@ with_jquery(function ($) {
                                         });
                                     }
                                     if ($(this).siblings('a:contains("Community")').length || $(this).parent().siblings('div.user-details').find('a:contains("Community")').length) {
-                                        // Question is poked by Community
-                                        $(this).find('span.last-activity').text('poked');
+                                        var that = this;
+                                        var lastactivityLink = $(this).attr('href').indexOf('?lastactivity') !== -1 ? $(this).attr('href') : $(this).attr('href') + '/?lastactivity';
+                                        $.get(lastactivityLink, function (data) {
+                                            var found = false;
+                                            var mobileLink = $(data).find('div#footer-menu  div.top-footer-links a:contains("mobile")').attr('onclick');
+                                            if (typeof mobileLink !== 'undefined' && mobileLink.match(/"(\/questions\/.+)"/) && mobileLink.match(/"(\/questions\/.+)"/)[1].match(/\/(\d+)$/)) {
+                                                var answerid = mobileLink.match(/"(\/questions\/.+)"/)[1].match(/\/(\d+)$/)[1];
+                                                if (!$(data).find('div[data-answerid="' + answerid + '"]').length) {
+                                                    found = true;
+                                                    $(that).find('span.last-activity').text('deleted answer');
+                                                }
+                                            }
+                                            if (!found) {
+                                                // Question is poked by Community
+                                                $(that).find('span.last-activity').text('poked');
+                                            }
+                                        });
                                     } else {
                                         if ($(this).find('span.relativetime') && $(this).find('span.relativetime').attr('title')) {
                                             var timestamp = timestampFromISO($(this).find('span.relativetime').attr('title'));
@@ -239,7 +254,7 @@ with_jquery(function ($) {
 
     $('body').on('click', 'div.new-post-activity', function () {
         init();
-    }).on('click', 'div.user-tab-sorts a', function () {
+    }).on('click', 'div.user-tab-sorts a, div.pager a', function () {
         setTimeout(function () {
             init();
         }, 500);
