@@ -2,7 +2,7 @@
 // @name             Stack Activity
 // @namespace        StackActivity
 // @version          1.2.5
-// @description      Stack Activity is a simple userscript that shows you the last activity of every question on the homepage and active tab of any Stack Exchange sites.
+// @description      Stack Activity is a simple userscript that shows you the last activity of every question on the homepage, question lists and user pages of any Stack Exchange sites.
 // @include          http://stackoverflow.com/*
 // @include          http://meta.stackoverflow.com/*
 // @include          http://superuser.com/*
