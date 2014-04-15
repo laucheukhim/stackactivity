@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             Stack Activity
 // @namespace        StackActivity
-// @version          1.2.6
+// @version          1.2.7
 // @description      Stack Activity is a simple userscript that shows you the last activity of every question on the homepage, question lists and user pages of any Stack Exchange sites.
 // @include          http://*stackoverflow.com/*
 // @include          https://*stackoverflow.com/*
@@ -78,7 +78,7 @@ with_jquery(function ($) {
             // Remove 'modified' from question lists
             $(element).contents().add($(element).parent().contents()).filter(function () {
                 if (this.nodeType === 3 && this.nodeValue.trim().length) {
-                    if (this.nodeValue.trim() === 'modified') {
+                    if ($.inArray(this.nodeValue.trim(), ['asked', 'answered', 'modified']) !== -1) {
                         this.nodeValue = '';
                     }
                 }
@@ -248,9 +248,9 @@ with_jquery(function ($) {
     $('body').on('click', 'div.new-post-activity', function () {
         init();
     }).on('click', 'div.user-tab-sorts a, div.pager a', function () {
-            setTimeout(function () {
-                init();
-            }, 500);
-        });
+        setTimeout(function () {
+            init();
+        }, 500);
+    });
 
 });
