@@ -241,12 +241,12 @@ with_jquery(function ($) {
         });
     }
 
-    if ((($('body').hasClass('home-page') || $('body').hasClass('questions-page') || $('body').hasClass('unanswered-page') || $('body').hasClass('tagged-questions-page')) && $('div.summary div.started a.started-link').length) || ($('body').hasClass('user-page') && $('div.summary div.started span.relativetime').length) || $('body').hasClass('search-page') && $('div#tabs').find('a.youarehere:contains("active")').length) {
-        init();
-    } else if ($('body').hasClass('question-page')) {
+    if ($('#qlist-wrapper').length) {
         $(document).ajaxSuccess(function () {
             init();
         });
+    } else if ((($('body').hasClass('home-page') || $('body').hasClass('questions-page') || $('body').hasClass('unanswered-page') || $('body').hasClass('tagged-questions-page')) && $('div.summary div.started a.started-link').length) || ($('body').hasClass('user-page') && $('div.summary div.started span.relativetime').length) || $('body').hasClass('search-page') && $('div#tabs').find('a.youarehere:contains("active")').length) {
+        init();
     }
 
     $('body').on('click', 'div.new-post-activity', function () {
