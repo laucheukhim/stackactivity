@@ -242,6 +242,7 @@ with_jquery(function ($) {
     }
 
     if ($('#qlist-wrapper').length) {
+        init();
         $(document).ajaxSuccess(function () {
             init();
         });
