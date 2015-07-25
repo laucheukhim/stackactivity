@@ -243,8 +243,10 @@ with_jquery(function ($) {
 
     if ($('#qlist-wrapper').length) {
         init();
-        $(document).ajaxSuccess(function () {
-            init();
+        $(document).ajaxSuccess(function (event, jqXHR, ajaxOptions, data) {
+            if (ajaxOptions.dataType === 'html' && $(data).find('#qlist-wrapper').length) {
+                init();
+            }
         });
     } else if ((($('body').hasClass('home-page') || $('body').hasClass('questions-page') || $('body').hasClass('unanswered-page') || $('body').hasClass('tagged-questions-page')) && $('div.summary div.started a.started-link').length) || ($('body').hasClass('user-page') && $('div.summary div.started span.relativetime').length) || $('body').hasClass('search-page') && $('div#tabs').find('a.youarehere:contains("active")').length) {
         init();
