@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             Stack Activity
 // @namespace        StackActivity
-// @version          1.2.7
+// @version          1.2.8
 // @description      Stack Activity is a simple userscript that shows you the last activity of every question on the homepage, question lists and user pages of any Stack Exchange sites.
 // @include          http://*stackoverflow.com/*
 // @include          https://*stackoverflow.com/*
@@ -73,16 +73,16 @@ with_jquery(function ($) {
 
     function applyLastActivity(element) {
         if (!$(element).find('span.last-activity').length) {
-            // Create element for holding last activity value
-            $(element).prepend('<span class="last-activity">modified</span> ');
-            // Remove 'modified' from question lists
+            // Get and remove existing value from question lists
+            var existingLastActivity = 'modified';
             $(element).contents().add($(element).parent().contents()).filter(function () {
                 if (this.nodeType === 3 && this.nodeValue.trim().length) {
-                    if ($.inArray(this.nodeValue.trim(), ['asked', 'answered', 'modified']) !== -1) {
-                        this.nodeValue = '';
-                    }
+                    existingLastActivity = this.nodeValue.trim();
+                    this.nodeValue = '';
                 }
             });
+            // Create element for holding last activity value
+            $(element).prepend('<span class="last-activity">' + existingLastActivity + '</span> ');
         }
     }
 
@@ -243,6 +243,10 @@ with_jquery(function ($) {
 
     if ((($('body').hasClass('home-page') || $('body').hasClass('questions-page') || $('body').hasClass('unanswered-page') || $('body').hasClass('tagged-questions-page')) && $('div.summary div.started a.started-link').length) || ($('body').hasClass('user-page') && $('div.summary div.started span.relativetime').length) || $('body').hasClass('search-page') && $('div#tabs').find('a.youarehere:contains("active")').length) {
         init();
+    } else if ($('body').hasClass('question-page')) {
+        $(document).ajaxSuccess(function () {
+            init();
+        });
     }
 
     $('body').on('click', 'div.new-post-activity', function () {
